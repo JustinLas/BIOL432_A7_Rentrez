@@ -1,0 +1,100 @@
+---
+title: "BIOL 432 — Assignment 7: Plant Community Analysis"
+author: "Justin Lasrado"
+date: "2025-10-28"
+output: html_document
+---
+
+## Overview
+
+This assignment looks at plant community composition and species richness inside and outside garlic mustard plots. I used NMDS to compare community composition and a two-way ANOVA to look at the effects of Location and Population.
+
+```{r setup, echo=TRUE, message=FALSE}
+library(vegan)
+
+floristic <- read.csv("FloristicSurvey.csv")
+head(floristic)
+str(floristic)
+
+# Separate the metadata from the species data
+meta <- floristic[, 1:10]
+species <- floristic[, 11:ncol(floristic)]
+
+# Scale each species by its maximum value
+species_scaled <- species
+for (i in 1:ncol(species_scaled)) {
+  species_scaled[, i] <- species_scaled[, i] / max(species_scaled[, i])
+}
+```
+
+## NMDS
+
+```{r nmds}
+# Calculate Bray-Curtis distances and run the NMDS
+# The two axes make it easier to visualize the sites
+
+dist_matrix <- vegdist(species_scaled, method = "bray")
+nmds <- metaMDS(dist_matrix, k = 2)
+nmds
+```
+
+```{r nmds-plot}
+# Plot the sites and colour them by location
+plot(
+  nmds,
+  display = "sites",
+  type = "n",
+  main = "NMDS of Plant Communities"
+)
+
+points(
+  nmds,
+  display = "sites",
+  col = ifelse(meta$Location == "i", "red", "blue"),
+  pch = 19
+)
+
+legend(
+  "topright",
+  legend = c("Inside", "Outside"),
+  col = c("red", "blue"),
+  pch = 19
+)
+```
+
+## Two-way ANOVA
+
+```{r anova}
+# Add the NMDS coordinates to the metadata
+site_scores <- scores(nmds, display = "sites")
+meta$NMDS1 <- site_scores[, 1]
+meta$NMDS2 <- site_scores[, 2]
+
+# Test the effects of Location and Population on NMDS1
+anova_both <- aov(NMDS1 ~ Location + Population, data = meta)
+summary(anova_both)
+```
+
+## Species richness
+
+```{r richness}
+# Count the number of species present at each site
+meta$Richness <- rowSums(species > 0)
+
+boxplot(
+  Richness ~ Location,
+  data = meta,
+  main = "Species Richness by Garlic Mustard Presence",
+  col = c("blue", "red"),
+  names = c("Outside", "Inside"),
+  ylab = "Number of Species"
+)
+```
+
+## Results
+
+The NMDS plot shows that the Inside and Outside sites are mixed rather than forming two clearly separated groups. The species richness plot also shows similar values between the two locations.
+
+The two-way ANOVA found a strong effect of Population on NMDS1 (F = 49.59, p = 1.43e-07), while Location was not significant (F = 0.35, p = 0.562). In this analysis, differences between populations were much larger than differences between the Inside and Outside locations.
+
+One limitation is that the ANOVA is being run on a single NMDS axis. NMDS is an ordination of multivariate community data, so a method such as PERMANOVA would be a more direct way to test whether overall community composition differs between groups. The ANOVA is kept here because it matches the original course analysis.
