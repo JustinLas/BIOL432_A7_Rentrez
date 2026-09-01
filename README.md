@@ -1,37 +1,46 @@
-# BIOL 432 — Assignment 7: NMDS and Community Ecology
+# BIOL 432 — Assignment 7: NCBI Sequence Retrieval with Rentrez
 
 This is my Assignment 7 work for **BIOL 432: Computation and Big Data in Biology** at Queen's University.
 
 ## What I did
 
-For this assignment I looked at plant communities inside and outside garlic mustard plots. I used NMDS to visualize differences in community composition and species richness to compare the number of species at each site.
+For this assignment I used the `rentrez` package in R to access nucleotide sequence data from the NCBI database. I fetched several *Borrelia burgdorferi* 16S rRNA sequences using their NCBI accession numbers and then processed the FASTA output in R.
 
-I also used a two-way ANOVA to look at the effects of Location and Population on the first NMDS axis.
+I also searched NCBI for additional *B. burgdorferi* 16S sequences and retrieved a reference sequence from the search results.
 
 ## Main methods
 
 - R
-- `vegan`
-- Bray-Curtis distance
-- NMDS using `metaMDS()`
-- Two-way ANOVA
-- Species richness
+- `rentrez`
+- NCBI Entrez API
+- Nucleotide database (`nuccore`)
+- FASTA sequence retrieval
+- String processing and sequence extraction
+- NCBI sequence searching
 
-## Files
+## What the code does
 
-- `A7_Lasrado_20283881.Rmd` — main analysis
-- `FloristicSurvey.csv` — data used in the analysis
+1. Installs and loads the `rentrez` package.
+2. Uses NCBI accession numbers (`HQ433692.1`, `HQ433694.1`, and `HQ433691.1`) to retrieve *B. burgdorferi* nucleotide sequences.
+3. Parses the FASTA output to separate sequence headers from the nucleotide sequences.
+4. Stores the sequence names and sequences in a data frame.
+5. Creates an unknown nucleotide sequence and reports its length.
+6. Searches NCBI for *B. burgdorferi* 16S ribosomal RNA sequences.
+7. Fetches the top three search results and extracts the first reference sequence and its length.
 
-The original course analysis was reconstructed from the finished analysis provided in the group repository. The R Markdown file is therefore a cleaned-up reconstruction rather than the original source file.
+## Example sequence retrieval
 
-## Results
+The main NCBI retrieval uses:
 
-The Inside and Outside sites were mixed in the NMDS plot, with no clear separation between the two locations. Location was also not significant in the ANOVA (F = 0.35, p = 0.562), while Population had a strong effect (F = 49.59, p = 1.43e-07).
+```r
+NcbiIds <- c("HQ433692.1", "HQ433694.1", "HQ433691.1")
+Bburg <- entrez_fetch(db = "nuccore", id = NcbiIds, rettype = "fasta")
+```
 
-The analysis suggests that differences between populations were much larger than differences associated with the presence or absence of garlic mustard in this dataset.
+The assignment demonstrates how R can be used to programmatically retrieve biological sequence data from NCBI rather than manually downloading individual sequences.
 
 ## Running the analysis
 
-Open the R Markdown file in RStudio and make sure `FloristicSurvey.csv` is in the same folder. The required package is `vegan`.
+Install and load `rentrez` in RStudio, then run the R script. An internet connection is required because the code accesses the NCBI database through Entrez.
 
-The original analysis used an ANOVA on NMDS1. A PERMANOVA would be a more direct method for testing differences in multivariate community composition, but the ANOVA is retained here because it was part of the original course analysis.
+This was one of my assignments working with biological databases and getting more comfortable with retrieving and processing sequence data in R.
