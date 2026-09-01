@@ -1,4 +1,4 @@
-# BIOL 432 — Assignment 7: Plant Community Analysis
+# BIOL 432 — Assignment 7: NMDS and Community Ecology
 
 This is my Assignment 7 work for **BIOL 432: Computation and Big Data in Biology** at Queen's University.
 
